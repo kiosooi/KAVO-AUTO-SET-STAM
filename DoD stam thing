@@ -4,7 +4,7 @@ local player = Players.LocalPlayer
 
 -- Kavo UI
 local Library = loadstring(game:HttpGet(
-	"https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"
+    "https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"
 ))()
 
 local Window = Library.CreateLib("Stamina Controller", "DarkTheme")
@@ -15,46 +15,47 @@ local Section = Tab:NewSection("Stamina")
 -- State
 --------------------------------------------------
 local desiredStamina
-local autoSetEnabled = false
+local autoSet = false
 
 --------------------------------------------------
 -- Textbox
 --------------------------------------------------
 Section:NewTextBox("stamina value", "Number only", function(txt)
-	local num = tonumber(txt)
-	if num then
-		desiredStamina = num
-	end
+    local num = tonumber(txt)
+    if num then
+        desiredStamina = num
+    end
 end)
 
 --------------------------------------------------
 -- Toggle
 --------------------------------------------------
 Section:NewToggle("auto set stamina", "Keeps MaxStamina locked", function(state)
-	autoSetEnabled = state
+    autoSet = state
 
-	if state then
-		task.spawn(function()
-			while autoSetEnabled do
-				if desiredStamina then
-					local survivorModel =
-						workspace
-						:FindFirstChild("GameAssets")
-						:FindFirstChild("Teams")
-						:FindFirstChild("Survivor")
-						:FindFirstChild(player.Name)
+    if state then
+        task.spawn(function()
+            while autoSet do
+                if desiredStamina then
+                    local survivor =
+                        workspace
+                        :FindFirstChild("GameAssets")
+                        :FindFirstChild("Teams")
+                        :FindFirstChild("Survivor")
+                        :FindFirstChild(player.Name)
 
-					if survivorModel then
-						local current = survivorModel:GetAttribute("MaxStamina")
+                    if survivor then
+                        local current = survivor:GetAttribute("MaxStamina")
 
-						if current ~= desiredStamina then
-							survivorModel:SetAttribute("MaxStamina", desiredStamina)
-						end
-					end
-				end
+                        -- Only set if attribute exists AND is different
+                        if current ~= nil and current ~= desiredStamina then
+                            survivor:SetAttribute("MaxStamina", desiredStamina)
+                        end
+                    end
+                end
 
-				task.wait(0.25)
-			end
-		end)
-	end
+                task.wait(0.2)
+            end
+        end)
+    end
 end)
