@@ -1,0 +1,66 @@
+-- Services
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Kavo UI
+local Library = loadstring(game:HttpGet(
+	"https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"
+))()
+
+local Window = Library.CreateLib("Stamina Controller", "DarkTheme")
+local Tab = Window:NewTab("Main")
+local Section = Tab:NewSection("Stamina")
+
+--------------------------------------------------
+-- State
+--------------------------------------------------
+local desiredStamina = nil
+local autoSetEnabled = false
+
+--------------------------------------------------
+-- Textbox
+--------------------------------------------------
+Section:NewTextBox("stamina value", "Set MaxStamina value", function(txt)
+	local num = tonumber(txt)
+	if num then
+		desiredStamina = num
+	else
+		desiredStamina = nil
+	end
+end)
+
+--------------------------------------------------
+-- Toggle
+--------------------------------------------------
+Section:NewToggle("auto set stamina", "Automatically keeps MaxStamina set", function(state)
+	autoSetEnabled = state
+
+	if state then
+		task.spawn(function()
+			while autoSetEnabled do
+				if desiredStamina then
+					local gameAssets = workspace:FindFirstChild("GameAssets")
+					if gameAssets then
+						local teams = gameAssets:FindFirstChild("Teams")
+						if teams then
+							local survivor = teams:FindFirstChild("Survivor")
+							if survivor then
+								local myModel = survivor:FindFirstChild(player.Name)
+								if myModel then
+									local currentValue = myModel:GetAttribute("MaxStamina")
+
+									-- Only change if different
+									if currentValue ~= desiredStamina then
+										myModel:SetAttribute("MaxStamina", desiredStamina)
+									end
+								end
+							end
+						end
+					end
+				end
+
+				task.wait(0.2) -- check interval (safe + lightweight)
+			end
+		end)
+	end
+end)
