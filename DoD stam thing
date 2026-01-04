@@ -14,52 +14,46 @@ local Section = Tab:NewSection("Stamina")
 --------------------------------------------------
 -- State
 --------------------------------------------------
-local desiredStamina = nil
+local desiredStamina
 local autoSetEnabled = false
 
 --------------------------------------------------
 -- Textbox
 --------------------------------------------------
-Section:NewTextBox("stamina value", "Set MaxStamina value", function(txt)
+Section:NewTextBox("stamina value", "Number only", function(txt)
 	local num = tonumber(txt)
 	if num then
 		desiredStamina = num
-	else
-		desiredStamina = nil
 	end
 end)
 
 --------------------------------------------------
 -- Toggle
 --------------------------------------------------
-Section:NewToggle("auto set stamina", "Automatically keeps MaxStamina set", function(state)
+Section:NewToggle("auto set stamina", "Keeps MaxStamina locked", function(state)
 	autoSetEnabled = state
 
 	if state then
 		task.spawn(function()
 			while autoSetEnabled do
 				if desiredStamina then
-					local gameAssets = workspace:FindFirstChild("GameAssets")
-					if gameAssets then
-						local teams = gameAssets:FindFirstChild("Teams")
-						if teams then
-							local survivor = teams:FindFirstChild("Survivor")
-							if survivor then
-								local myModel = survivor:FindFirstChild(player.Name)
-								if myModel then
-									local currentValue = myModel:GetAttribute("MaxStamina")
+					local survivorModel =
+						workspace
+						:FindFirstChild("GameAssets")
+						:FindFirstChild("Teams")
+						:FindFirstChild("Survivor")
+						:FindFirstChild(player.Name)
 
-									-- Only change if different
-									if currentValue ~= desiredStamina then
-										myModel:SetAttribute("MaxStamina", desiredStamina)
-									end
-								end
-							end
+					if survivorModel then
+						local current = survivorModel:GetAttribute("MaxStamina")
+
+						if current ~= desiredStamina then
+							survivorModel:SetAttribute("MaxStamina", desiredStamina)
 						end
 					end
 				end
 
-				task.wait(0.2) -- check interval (safe + lightweight)
+				task.wait(0.25)
 			end
 		end)
 	end
